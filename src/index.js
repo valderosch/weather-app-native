@@ -2,8 +2,10 @@ import {View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshCon
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import apikey from './addons/info'
+import DateTime from './components/DateTime';
+import Locator from './components/Locator';
 
-let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=90455296bffe25c7494fe6a7b285792c`;
+let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${apikeys}`;
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
@@ -46,18 +48,22 @@ const Weather = () => {
     const current = forecast.current.weather[0];
 
     return(
-        <View>
+        <View style={styles.container}>
             <ScrollView 
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={() => loadForecast()}/>
                 }
             style={{marginTop:50}}>
-                <Text style={styles.title}>
-                    Current Weather 
-                </Text> 
                 <Text style={styles.location}>
-                    Your Location
+                    {/* <Locator lat={location.current.latitude} lon={location.current.longitude}/> */}
                 </Text> 
+                <Text style={styles.time}>
+                   <DateTime/>
+                </Text>
+                <Weather 
+                        temp = {forecast.current.temp} like={forecast.current.feels_like} 
+                        humm ={forecast.current.humidity} desc = {forecast.current.decription}
+                    />
 
             </ScrollView>
         </View>
@@ -67,9 +73,15 @@ const Weather = () => {
 export default Weather;
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#FFE142'    
+    },
+
     loading: {
       flex: 1,
       backgroundColor: '#59с2а6',
+      color: '#426EFE',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -79,9 +91,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 
-    title: {
+    time: {
         textAlign: 'center',
-        fontSize: 35,
-        color: '#c2c2c2',
-    }
+        fontSize: 18,
+        color: '#F2F2F2',
+        backgroundColor: '#000000',
+        marginLeft: 120,
+        marginRight: 120,
+        padding: 3,
+        borderRadius: 100 / 2,
+    },
 });
