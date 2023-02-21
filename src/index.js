@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import apikey from './addons/info'
 
-let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${apikey}`;
+let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=90455296bffe25c7494fe6a7b285792c`;
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
@@ -14,16 +14,17 @@ const Weather = () => {
 
         const {status} = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted'){
-            Alert.alert('Location Permission denied!');
+            Alert.alert('Location Error','Location Permission denied! \nPlease give this app permission.');
+            await Location.requestForegroundPermissionsAsync();
         }
 
         let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
 
-        const responce = await fetch(`${url}&lat${location.coords.altitude}&lon${location.coords.longitude}`)
+        const responce = await fetch(`${url}&lat=${location.coords.latitude}&lon=${location.coords.longitude}`)
         const data = await responce.json();
 
         if (!responce.ok){
-            Alert.alert('Error', 'Something went wrong, while fetching weather data');
+            Alert.alert('Data Error', 'Something went wrong, while fetching weather data');
         } else{
             setForecast(data);            
         }
@@ -68,13 +69,13 @@ export default Weather;
 const styles = StyleSheet.create({
     loading: {
       flex: 1,
-      backgroundColor: '#595959',
+      backgroundColor: '#59с2а6',
       alignItems: 'center',
       justifyContent: 'center',
     },
 
     location: {
-        alignItems: 'center',
+        alignItems: 'flex-start',
         textAlign: 'center',
     },
 
