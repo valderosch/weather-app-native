@@ -50,7 +50,6 @@ const Weather = () => {
     }
 
     const current = forecast.current.weather[0];
-    console.warn(forecast.current)
     return(
         <View style={styles.container}>
             <ScrollView 
@@ -59,7 +58,7 @@ const Weather = () => {
                 }
             style={{marginTop:50}}>
                 <Text style={styles.location}>
-                    New York
+                    Your Location
                     {/* <Locator myLat={location.current.latitude} myLon={location.current.longitude}/> */}
                 </Text> 
                 <Text style={styles.time}>
@@ -106,13 +105,16 @@ const styles = StyleSheet.create({
 
     location: {
         alignItems: 'flex-start',
+        fontWeight: 'bold',
+        fontSize: 22,
+        marginBottom: 20,
         textAlign: 'center',
     },
 
     time: {
         textAlign: 'center',
-        fontSize: 18,
-        color: '#F2F2F2',
+        fontSize: 15,
+        color: '#FFE142',
         backgroundColor: '#000000',
         marginLeft: 120,
         marginRight: 120,
