@@ -1,11 +1,15 @@
 import {View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import apikey from './addons/info'
+import {keys} from './addons/info'
 import DateTime from './components/DateTime';
+import Forecast from './components/Forecast';
 import Locator from './components/Locator';
+import Summary from './components/Summary';
+import Properties from './components/Properties';
+import Hourly from './components/Hourly';
 
-let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${apikeys}`;
+let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${keys}`;
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
@@ -46,7 +50,7 @@ const Weather = () => {
     }
 
     const current = forecast.current.weather[0];
-
+    console.warn(forecast.current)
     return(
         <View style={styles.container}>
             <ScrollView 
@@ -55,16 +59,30 @@ const Weather = () => {
                 }
             style={{marginTop:50}}>
                 <Text style={styles.location}>
-                    {/* <Locator lat={location.current.latitude} lon={location.current.longitude}/> */}
+                    New York
+                    {/* <Locator myLat={location.current.latitude} myLon={location.current.longitude}/> */}
                 </Text> 
                 <Text style={styles.time}>
                    <DateTime/>
                 </Text>
-                <Weather 
-                        temp = {forecast.current.temp} like={forecast.current.feels_like} 
-                        humm ={forecast.current.humidity} desc = {forecast.current.decription}
-                    />
+                <Forecast 
+                    temp = {forecast.current.temp} 
+                    descr = {forecast.current.weather[0].description}/>
 
+                <Summary
+                    temp = {forecast.current.temp} 
+                    like= {forecast.current.feels_like}/>
+
+                <Properties
+                    wind = {forecast.current.wind_speed}
+                    humm = {forecast.current.humidity}
+                    visbl = {forecast.current.visibility}/>
+
+                <Hourly 
+                    hour = {forecast.hourly}
+                    temp = {forecast.current.temp}
+                    descr = {forecast.current.weather[0].description}
+                />
             </ScrollView>
         </View>
     )
