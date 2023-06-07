@@ -8,25 +8,26 @@ const Hourly = (props) => {
             horizontal data={props.hour.slice(0,24)}
             keyExtractor={(item, index) => index.toString()}
             renderItem={(hourl) => {
-                const weather = hourl.item.weather[0];
-                const dt = new Date(hourl.item.dt * 1000);
-                const path = `../../assets/weather/${weather.icon}.png`
-                console.warn(path)
-                
-                return(
-                    <View style={styles.item}>
-                        <View style={styles.inner}>
-                            <Image style={styles.image} source={require(`../../assets/weather/10n.png`)}/>
-                            <Text style={styles.temperature}>
-                                {Math.round(hourl.item.temp)} °
+                try{
+                    const weather = hourl.item.weather[0];
+                    const dt = new Date(hourl.item.dt * 1000);
+                    return(
+                        <View style={styles.item}>
+                            <View style={styles.inner}>
+                                <Image style={styles.image} source={{ uri: `../../assets/weather/${weather.icon}.png` }}/>
+                                <Text style={styles.temperature}>
+                                    {Math.round(hourl.item.temp)} °
+                                </Text>
+                            </View>
+                            <Text style={styles.time}>
+                                {dt.toLocaleTimeString([], {timeStyle: 'short'}).slice(0,5)}
                             </Text>
+                            <Text style={styles.description}>{weather.description}</Text>
                         </View>
-                        <Text style={styles.time}>
-                            {dt.toLocaleTimeString([], {timeStyle: 'short'}).slice(0,5)}
-                        </Text>
-                        <Text style={styles.description}>{weather.description}</Text>
-                    </View>
-                ) 
+                    ) 
+                } catch (error){
+                    console.warn(`Error to load immage: ${weather.icon}`, error)
+                }
             }}
         />
     )
@@ -77,11 +78,15 @@ const styles = StyleSheet.create({
     },
 
     description: {
+        flex: 2,
         alignItems: 'flex-start',
         fontWeight: '500',
         fontSize: 12,
         textAlign: 'center',
-        marginTop: 1
+        marginTop: 1,
+        flexWrap: 'nowrap',
+        overflow: 'hidden',
+        
     },
 
     temperature: {
