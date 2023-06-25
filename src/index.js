@@ -1,4 +1,4 @@
-import {View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl} from 'react-native';
+import {View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl, useColorScheme} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import {keys} from './addons/info'
@@ -13,7 +13,25 @@ let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
+    const [locations, setLocations] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [locationError, setLocationError] = useState(false);
+    const theme = useColorScheme();
+    const isDarkTheme = theme === 'dark';
+
+    const checkLocationPermissions = async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            'Location Error',
+            'Location Permission denied! \nPlease give this app permission.'
+          );
+          setLocationError(true);
+          setRefreshing(false);
+          return false;
+        }
+        return true;
+    };
 
     const loadForecast = async() => {
         setRefreshing(true);
@@ -24,17 +42,24 @@ const Weather = () => {
             await Location.requestForegroundPermissionsAsync();
         }
 
-        let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
-
+        const location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
         const responce = await fetch(`${url}&lat=${location.coords.latitude}&lon=${location.coords.longitude}`)
         const data = await responce.json();
 
         if (!responce.ok){
             Alert.alert('Data Error', 'Something went wrong, while fetching weather data');
         } else{
-            setForecast(data);            
+            setForecast(data);           
+        }
+
+        if (location != null){
+            setLocations(location); 
+        }
+        else {
+            Alert.alert('location err', 'Location error while gitting info')
         }
         setRefreshing(false);
+        return location;
     }
 
     useEffect(() => {
@@ -51,15 +76,18 @@ const Weather = () => {
 
     const current = forecast.current.weather[0];
     return(
-        <View style={styles.container}>
+        <View style={[styles.container,
+                    isDarkTheme ? { backgroundColor: '#FFE142' } : { backgroundColor: '#FFE142' },
+                    ]}>
             <ScrollView 
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={() => loadForecast()}/>
                 }
-            style={{marginTop:50}}>
+                style={{marginTop:50}}>
                 <Text style={styles.location}>
-                    Your Location
-                    {/* <Locator myLat={location.current.latitude} myLon={location.current.longitude}/> */}
+                {locations && 
+                    <Locator latitude={locations.coords.latitude} longitude={locations.coords.longitude} 
+                />}
                 </Text> 
                 <Text style={styles.time}>
                    <DateTime/>
@@ -88,7 +116,7 @@ const Weather = () => {
 }
 
 export default Weather;
-
+//#FFE142
 const styles = StyleSheet.create({
     container: {
         flex: 1,

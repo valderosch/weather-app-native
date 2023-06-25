@@ -7,7 +7,7 @@ const Proreties = (props) => {
         <View style={styles.main}>
             <View style={styles.block}>
                 <Image source={require('../../assets/icons/wind.png')} alt="wind" style={styles.image}/>
-                <Text style={styles.text}>{Math.round(props.wind)}km/h</Text>
+                <Text style={styles.text}>{Math.round(props.wind)} km/h</Text>
                 <Text style={styles.subtext}>wind</Text>
             </View>
             <View style={styles.block}>
@@ -17,7 +17,7 @@ const Proreties = (props) => {
             </View>
             <View style={styles.block}>
                 <Image source={require('../../assets/icons/visibility.png')} alt="visibility" style={styles.image}/>
-                <Text style={styles.text}>{visibility.toFixed(1)}km</Text>
+                <Text style={styles.text}>{visibility.toFixed(1)} km</Text>
                 <Text style={styles.subtext}>visibility</Text>
             </View>
         </View>

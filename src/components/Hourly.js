@@ -1,16 +1,18 @@
 import React from "react";
-import { Text, View, Image, FlatList, StyleSheet } from "react-native";
+import { Text, View, Image, FlatList, StyleSheet, Dimensions } from "react-native";
+import { COLOR } from "../../constants";
 
 const Hourly = (props) => {
-   
     return(
         <FlatList style  ={styles.main}
             horizontal data={props.hour.slice(0,24)}
             keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
             renderItem={(hourl) => {
                 try{
                     const weather = hourl.item.weather[0];
                     const dt = new Date(hourl.item.dt * 1000);
+                    console.log("icon", weather.icon);
                     return(
                         <View style={styles.item}>
                             <View style={styles.inner}>
@@ -35,27 +37,29 @@ const Hourly = (props) => {
 
 export default Hourly;
 
+const screenw = Dimensions.get('screen').width;
+const screenh = Dimensions.get('screen').height;
+
 const styles = StyleSheet.create({
     main: {
         flex: 1,
         marginLeft: 40,
         marginRight: 40,
         alignContent: 'space-around',
-        height: 80,
+        height: screenw * 0.25,
     },
 
     item: {
-        marginRight: 15,
-        width: 100,
-        height: 80,
+        marginRight: screenw * 0.02,
+        width: screenw * 0.25,
+        height: screenw * 0.22,
         flexDirection: 'column',
         justifyContent: 'center',
         alignContent: 'center',
         border: 1,
         borderRadius: 20 / 2,
         borderWidth: 3,
-        borderColor: '#000'
-
+        borderColor: COLOR.halfblacked,
     },
 
     inner: {
@@ -64,17 +68,18 @@ const styles = StyleSheet.create({
     },
 
     image: {
-        width: 25,
-        height: 25,
+        width: screenw * 0.08,
+        height: screenw * 0.08,
         opacity: 0.5,
         marginLeft: 8,
-        marginTop: 6
+        marginTop: 6,
     },
 
     time:{
         textAlign: 'center',
         fontSize: 15,
         fontWeight: '600',
+        color: COLOR.black
     },
 
     description: {
@@ -86,13 +91,14 @@ const styles = StyleSheet.create({
         marginTop: 1,
         flexWrap: 'nowrap',
         overflow: 'hidden',
-        
+        color: COLOR.black
     },
 
     temperature: {
         fontWeight: '600',
         fontSize: 23,
         textAlign: 'right',
-        paddingRight: 10
+        paddingRight: 10,
+        color: COLOR.black
     }
 });

@@ -10,6 +10,8 @@ npm-debug.*
 *.orig.*
 web-build/
 /src/addons/
+android/
+screens/
 
 # macOS
 .DS_Store
