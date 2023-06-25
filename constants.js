@@ -13,6 +13,6 @@ export const COLOR = {
     textMuted: "#838383", // grey unactive text color
     transparent: 'rgba(0, 0, 0, 0)', // trannsparent color
     halfblacked: 'rgba(0, 0, 0, 0.6)', // black mid-opacity color
-    halfwhited: 'rgba(255, 255, 255, 0.6)', // white half-opacity
+    halfwhited: 'rgba(255, 255, 255, 0.5)', // white half-opacity
 }
 

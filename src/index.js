@@ -1,5 +1,6 @@
-import {View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl, useColorScheme} from 'react-native';
+import { View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl, useColorScheme, TouchableOpacity, Dimensions, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import NetInfo from '@react-native-community/netinfo';
 import * as Location from 'expo-location';
 import {keys} from './addons/info'
 import DateTime from './components/DateTime';
@@ -8,6 +9,7 @@ import Locator from './components/Locator';
 import Summary from './components/Summary';
 import Properties from './components/Properties';
 import Hourly from './components/Hourly';
+import { COLOR } from '../constants';
 
 let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${keys}`;
 
@@ -16,64 +18,146 @@ const Weather = () => {
     const [locations, setLocations] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [locationError, setLocationError] = useState(false);
+    const [isConnected, setIsConnected] = useState(false);
+    const [showPermissionDenied, setShowPermissionDenied] = useState(false);
+    const [requestingPermission, setRequestingPermission] = useState(false);
+    const [loading, setLoading] = useState(true);
     const theme = useColorScheme();
     const isDarkTheme = theme === 'dark';
 
+    // Internet connection check
+    const checkInternetConnection = () => {
+        NetInfo.fetch().then((state) => {
+          setIsConnected(state.isConnected);
+          setLoading(false);
+        });
+      };
+
+    // check user location permision
     const checkLocationPermissions = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
+        setRequestingPermission(false);
+        setShowPermissionDenied(true);
           Alert.alert(
-            'Location Error',
-            'Location Permission denied! \nPlease give this app permission.'
+            'User Location Error',
+            'User Location Permission denied! \nPlease give this app permission to continue.'
           );
           setLocationError(true);
           setRefreshing(false);
           return false;
         }
+        setShowPermissionDenied(false);
         return true;
     };
 
-    const loadForecast = async() => {
+    const getLocation = async () => {
+        const hasLocationPermission = await checkLocationPermissions();
+        if (!hasLocationPermission) {
+          return;
+        }
+        try {
+          let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
+          if (!location) {
+            location = await getLocation();
+          }
+          setLocations(location);
+        } catch (error) {
+          console.log('Error fetching location:', error);
+          setLocationError(true);
+        }
+      };
+    const loadForecast = async () => {
         setRefreshing(true);
-
-        const {status} = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted'){
-            Alert.alert('Location Error','Location Permission denied! \nPlease give this app permission.');
-            await Location.requestForegroundPermissionsAsync();
+    
+        const hasLocationPermission = await checkLocationPermissions();
+        if (!hasLocationPermission) {
+          setRefreshing(false);
+          return;
         }
-
-        const location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
-        const responce = await fetch(`${url}&lat=${location.coords.latitude}&lon=${location.coords.longitude}`)
-        const data = await responce.json();
-
-        if (!responce.ok){
-            Alert.alert('Data Error', 'Something went wrong, while fetching weather data');
-        } else{
-            setForecast(data);           
-        }
-
-        if (location != null){
-            setLocations(location); 
-        }
-        else {
-            Alert.alert('location err', 'Location error while gitting info')
-        }
+    
+        try {
+            await getLocation();
+        
+            if (locationError) {
+              setRefreshing(false);
+              return;
+            }
+            if (locations && locations.coords) {
+              const response = await fetch(
+                `${url}&lat=${locations.coords.latitude}&lon=${locations.coords.longitude}`
+              );
+              const data = await response.json();
+        
+              if (!response.ok) {
+                Alert.alert('Data Error', 'Something went wrong while fetching weather data');
+              } else {
+                setForecast(data);
+              }
+            }
+          } catch (error) {
+            console.log('Error fetching weather data:', error);
+            setLocationError(true);
+          }
+    
         setRefreshing(false);
-        return location;
-    }
+    };
+
+    const requestLocationPermission = async () => {
+        console.log('called func');
+        setRequestingPermission(true);
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setShowPermissionDenied(true);
+        }
+        setRequestingPermission(false);
+    };
 
     useEffect(() => {
-        loadForecast(); 
+        loadForecast();
+        checkInternetConnection(); 
     }, [])
 
-    if(!forecast){
-        return(
-            <View style={styles.loading}>
-                <ActivityIndicator size='large'/>
+
+    //Connection
+    if (!isConnected) {
+        return (
+          <View style={styles.permission_body}>
+            <Image source={require('../assets/icons/conection.png')} style={styles.permision_image} />
+            <View style={styles.permission_info}>
+              <Image source={require('../assets/icons/info.png')} style={styles.permision_info_img} />
+              <Text style={styles.permission_text}>No Internet Connection</Text>
             </View>
-        )
+          </View>
+        );
     }
 
+    // Geo Permissions
+    if (!forecast) {
+        if (locationError) {
+          return (
+            <View style={styles.permission_body}>
+                <Image source={require('../assets/icons/location.png')} alt="humidity" style={styles.permision_image}/>
+                <View style = {styles.permission_info}>
+                    <Image source={require('../assets/icons/info.png')} alt="humidity" style={styles.permision_info_img}/>
+                    <Text style={styles.permission_text}>
+                        This app requires location permission.
+                    </Text>
+                </View>
+                <TouchableOpacity onPress={requestLocationPermission} style = {styles.permision_button}>
+                    <Text style= {styles.permission_btn_text}>Request Permission</Text>
+                </TouchableOpacity>
+            </View>
+          );
+        }
+    
+        return (
+          <View style={styles.loading}>
+            <ActivityIndicator size="large" />
+          </View>
+        );
+    }
+    
     const current = forecast.current.weather[0];
     return(
         <View style={[styles.container,
@@ -81,7 +165,7 @@ const Weather = () => {
                     ]}>
             <ScrollView 
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={() => loadForecast()}/>
+                    <RefreshControl refreshing={refreshing} onRefresh={() => loadForecast()} style={styles.refreshControl}/>
                 }
                 style={{marginTop:50}}>
                 <Text style={styles.location}>
@@ -115,12 +199,16 @@ const Weather = () => {
     )
 }
 
-export default Weather;
+const screenw = Dimensions.get('screen').width;
+const screenh = Dimensions.get('screen').height;
 //#FFE142
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFE142'    
+    },
+    refreshControl:{
+        backgroundColor: COLOR.white
     },
 
     loading: {
@@ -149,4 +237,64 @@ const styles = StyleSheet.create({
         padding: 3,
         borderRadius: 100 / 2,
     },
+
+    permission_body: {
+        flex: 1,
+        width: screenw,
+        height: screenh,
+        backgroundColor: COLOR.primary,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        padding: screenw * 0.05
+    },
+
+    permision_image: {
+        width: screenw * 0.9,
+        height: screenw * 0.9,
+    },
+
+    permission_info:{
+        width: screenw * 0.85,
+        height: screenw * 0.3,
+        borderRadius: 30,
+        backgroundColor: COLOR.halfwhited,
+        flexDirection: 'row',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        alignItems: 'center',
+        padding: screenw * 0.05
+    },
+
+    permision_info_img: {
+        width: screenw * 0.2,
+        height: screenw * 0.2,
+    },
+
+    permission_text: {
+        width: '65%',
+        height: '70%',
+        fontSize: 18,
+        fontWeight: '500',
+    },
+
+    permision_button: {
+        width: screenw * 0.6, 
+        height: screenw * 0.15,
+        backgroundColor: COLOR.halfblacked,
+        borderRadius: 15,
+        alignSelf: 'center',
+        justifyContent: 'center',
+        alignContent: 'center'
+    },
+    
+    permission_btn_text: {
+        color: COLOR.white,
+        fontSize: 22,
+        fontWeight: '600',
+        textAlign: 'center',
+    },
 });
+
+export default Weather;
