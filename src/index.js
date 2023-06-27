@@ -26,12 +26,15 @@ const Weather = () => {
     const isDarkTheme = theme === 'dark';
 
     // Internet connection check
-    const checkInternetConnection = () => {
-        NetInfo.fetch().then((state) => {
-          setIsConnected(state.isConnected);
-          setLoading(false);
-        });
-      };
+    const checkInternetConnection = async () => {
+      try {
+        const state = await NetInfo.fetch();
+        setIsConnected(state.isConnected);
+        setLoading(false);
+      } catch (error) {
+        console.log('Error checking internet connection:', error);
+      }
+    };
 
     // check user location permision
     const checkLocationPermissions = async () => {
@@ -69,6 +72,7 @@ const Weather = () => {
       };
     const loadForecast = async () => {
         setRefreshing(true);
+        setLocationError(false);
     
         const hasLocationPermission = await checkLocationPermissions();
         if (!hasLocationPermission) {
@@ -91,8 +95,10 @@ const Weather = () => {
         
               if (!response.ok) {
                 Alert.alert('Data Error', 'Something went wrong while fetching weather data');
+                setLocationError(true);
               } else {
                 setForecast(data);
+                setLocationError(true);
               }
             }
           } catch (error) {
@@ -100,7 +106,7 @@ const Weather = () => {
             setLocationError(true);
           }
     
-        setRefreshing(false);
+          setRefreshing(false);
     };
 
     const requestLocationPermission = async () => {
@@ -113,6 +119,7 @@ const Weather = () => {
         setRequestingPermission(false);
     };
 
+    //auto loading 
     useEffect(() => {
         loadForecast();
         checkInternetConnection(); 
