@@ -50,7 +50,7 @@ const Weather = () => {
           setRefreshing(false);
           return false;
         }
-        setShowPermissionDenied(false);
+        // setShowPermissionDenied(false);
         return true;
     };
 
@@ -122,7 +122,9 @@ const Weather = () => {
     //auto loading 
     useEffect(() => {
         loadForecast();
-        checkInternetConnection(); 
+        checkInternetConnection();
+        checkLocationPermissions(); 
+        requestLocationPermission();
     }, [])
 
 
@@ -146,10 +148,10 @@ const Weather = () => {
             <View style={styles.permission_body}>
                 <Image source={require('../assets/icons/location.png')} alt="humidity" style={styles.permision_image}/>
                 <View style = {styles.permission_info}>
-                    <Image source={require('../assets/icons/info.png')} alt="humidity" style={styles.permision_info_img}/>
                     <Text style={styles.permission_text}>
                         This app requires location permission.
                     </Text>
+                    <Image source={require('../assets/icons/info.png')} alt="humidity" style={styles.permision_info_img}/>
                 </View>
                 <TouchableOpacity onPress={requestLocationPermission} style = {styles.permision_button}>
                     <Text style= {styles.permission_btn_text}>Request Permission</Text>
@@ -263,45 +265,51 @@ const styles = StyleSheet.create({
 
     permission_info:{
         width: screenw * 0.85,
-        height: screenw * 0.3,
-        borderRadius: 30,
+        height: screenw * 0.35,
         backgroundColor: COLOR.halfwhited,
         flexDirection: 'row',
         alignSelf: 'center',
         justifyContent: 'space-between',
         alignContent: 'center',
         alignItems: 'center',
-        padding: screenw * 0.05
+        padding: screenw * 0.02,
+        borderRadius: 5,
     },
 
     permision_info_img: {
-        width: screenw * 0.2,
-        height: screenw * 0.2,
+        width: screenw * 0.22,
+        height: screenw * 0.22,
+        marginRight: screenw * 0.02
     },
 
     permission_text: {
-        width: '65%',
-        height: '70%',
-        fontSize: 18,
-        fontWeight: '500',
+        width: '45%',
+        height: '95%',
+        fontSize: 22,
+        fontWeight: '400',
+        color: COLOR.black,
+        borderLeftColor: COLOR.black,
+        borderLeftWidth: 5,
+        paddingLeft: 15
     },
 
     permision_button: {
-        width: screenw * 0.6, 
+        width: screenw * 0.53, 
         height: screenw * 0.15,
-        backgroundColor: COLOR.halfblacked,
-        borderRadius: 15,
         alignSelf: 'center',
         justifyContent: 'center',
-        alignContent: 'center'
+        alignContent: 'center',
+        borderBottomColor: COLOR.black,
+        borderBottomWidth: 5,
+        borderStyle: 'dotted',
     },
     
     permission_btn_text: {
-        color: COLOR.white,
+        color: COLOR.black,
         fontSize: 22,
         fontWeight: '600',
         textAlign: 'center',
-    },
+      },
 });
 
 export default Weather;
