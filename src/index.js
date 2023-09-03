@@ -12,6 +12,8 @@ import Hourly from './components/Hourly';
 import { COLOR } from '../constants';
 
 let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${keys}`;
+const screenw = Dimensions.get('screen').width;
+const screenh = Dimensions.get('screen').height;
 
 const Weather = () => {
     const [forecast, setForecast] = useState(null);
@@ -50,7 +52,7 @@ const Weather = () => {
           setRefreshing(false);
           return false;
         }
-        // setShowPermissionDenied(false);
+        setShowPermissionDenied(false);
         return true;
     };
 
@@ -71,7 +73,7 @@ const Weather = () => {
         }
       };
     const loadForecast = async () => {
-        setRefreshing(true);
+        
         setLocationError(false);
     
         const hasLocationPermission = await checkLocationPermissions();
@@ -79,7 +81,7 @@ const Weather = () => {
           setRefreshing(false);
           return;
         }
-    
+        setRefreshing(true);
         try {
             await getLocation();
         
@@ -106,7 +108,7 @@ const Weather = () => {
             setLocationError(true);
           }
     
-          setRefreshing(false);
+        setRefreshing(false);
     };
 
     const requestLocationPermission = async () => {
@@ -116,32 +118,34 @@ const Weather = () => {
         if (status !== 'granted') {
           setShowPermissionDenied(true);
         }
-        setRequestingPermission(false);
+        checkLocationPermissions();
+        setRequestingPermission(false);//////////////////////// ADD a REDUX to fix this shit
     };
 
     //auto loading 
     useEffect(() => {
         loadForecast();
         checkInternetConnection();
-        checkLocationPermissions(); 
-        requestLocationPermission();
     }, [])
 
 
-    //Connection
+    //Connection Permission 
     if (!isConnected) {
         return (
           <View style={styles.permission_body}>
             <Image source={require('../assets/icons/conection.png')} style={styles.permision_image} />
-            <View style={styles.permission_info}>
-              <Image source={require('../assets/icons/info.png')} style={styles.permision_info_img} />
+            <View style={styles.permission_info}>  
               <Text style={styles.permission_text}>No Internet Connection</Text>
+              <Image source={require('../assets/icons/info.png')} style={styles.permision_info_img} />
             </View>
+            <TouchableOpacity onPress={requestLocationPermission} style = {styles.permision_button}>
+                    <Text style= {styles.permission_btn_text}>Try Again</Text>
+                </TouchableOpacity>
           </View>
         );
     }
 
-    // Geo Permissions
+    // Geolocation Permissions
     if (!forecast) {
         if (locationError) {
           return (
@@ -208,9 +212,6 @@ const Weather = () => {
     )
 }
 
-const screenw = Dimensions.get('screen').width;
-const screenh = Dimensions.get('screen').height;
-//#FFE142
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -1,22 +1,24 @@
 import React from "react";
 import { Text, View, Image, StyleSheet } from "react-native";
 
+const IMAGEPATH = '../../assets/icons/' 
+
 const Proreties = (props) => {
     const visibility = (props.visbl / 1000);
     return(
         <View style={styles.main}>
             <View style={styles.block}>
-                <Image source={require('../../assets/icons/wind.png')} alt="wind" style={styles.image}/>
+                <Image source={require(`${IMAGEPATH}wind.png`)} alt="wind" style={styles.image}/>
                 <Text style={styles.text}>{Math.round(props.wind)} km/h</Text>
                 <Text style={styles.subtext}>wind</Text>
             </View>
             <View style={styles.block}>
-                <Image source={require('../../assets/icons/humidity.png')} alt="humidity" style={styles.image}/>
+                <Image source={require(`${IMAGEPATH}humidity.png`)} alt="humidity" style={styles.image}/>
                 <Text style={styles.text}>{props.humm}%</Text>
                 <Text style={styles.subtext}>humidity</Text>
             </View>
             <View style={styles.block}>
-                <Image source={require('../../assets/icons/visibility.png')} alt="visibility" style={styles.image}/>
+                <Image source={require(`${IMAGEPATH}visibility.png`)} alt="visib" style={styles.image}/>
                 <Text style={styles.text}>{visibility.toFixed(1)} km</Text>
                 <Text style={styles.subtext}>visibility</Text>
             </View>
