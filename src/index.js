@@ -1,5 +1,6 @@
 import { View, Text, Alert, StyleSheet, ActivityIndicator, ScrollView, RefreshControl, useColorScheme, TouchableOpacity, Dimensions, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import SplashScreen from 'react-native-splash-screen'
 import NetInfo from '@react-native-community/netinfo';
 import * as Location from 'expo-location';
 import {keys} from './addons/info'
@@ -73,7 +74,6 @@ const Weather = () => {
         }
       };
     const loadForecast = async () => {
-        
         setLocationError(false);
     
         const hasLocationPermission = await checkLocationPermissions();
