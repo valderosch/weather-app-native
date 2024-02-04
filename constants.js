@@ -34,7 +34,7 @@ export const FONTSIZE = {
 export const FONTWEIGHT = {
     /* FONT Weight */
     light: '100', // ultra thin
-    light: '200', // thin regular
+    lighter: '200', // thin regular
     medium: '500', // medium text
     bold: '700', // bold 
     bolder: '900', // black ultra

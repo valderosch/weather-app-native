@@ -119,7 +119,7 @@ const Weather = () => {
           setShowPermissionDenied(true);
         }
         checkLocationPermissions();
-        setRequestingPermission(false);//////////////////////// ADD a REDUX to fix this shit
+        setRequestingPermission(false);// ADD a REDUX to fix this shit
     };
 
     //auto loading 
