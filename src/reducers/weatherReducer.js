@@ -2,7 +2,7 @@ const SET_FORECAST = "SET_FORECAST";
 
 
 const initialState = {
-    forecast: {},
+    forecast: null,
 }
 
 export default function utilsReducer(state = initialState, action) {
@@ -14,7 +14,7 @@ export default function utilsReducer(state = initialState, action) {
     }
 }
 
-export const setForecast = (data) => ({
+export const setForecastData = (data) => ({
     type: SET_FORECAST,
     payload: data
 })

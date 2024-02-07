@@ -12,37 +12,66 @@ import Hourly from './Hourly';
 import { COLOR } from '../../constants';
 import connectionImg from "../../assets/icons/connection.png";
 import infoImg from "../../assets/icons/info.png";
+import {useDispatch, useSelector} from "react-redux";
+import {setGeoData, setGeolocationPermission, setInternetStatus} from "../reducers/utilsReducer";
+import {setForecastData} from "../reducers/weatherReducer";
 
 let url = `http://api.openweathermap.org/data/2.5/onecall?&units=metric&exclude=minutely&appid=${keys}`;
-const screenw = Dimensions.get('screen').width;
-const screenh = Dimensions.get('screen').height;
 
 const Weather = () => {
-    const [forecast, setForecast] = useState(null);
-    const [locations, setLocations] = useState(null);
+    const dispatch = useDispatch();
+    const forecast = useSelector(state => state.weather.forecast);
+    const geoPermission = useSelector(state => state.utils.geoPermission);
+    const connection = useSelector(state => state.utils.internetAvailability);
+    const geoData = useSelector(state => state.utils.geoData);
+    // const [forecast, setForecast] = useState(null);
+    // const [locations, setLocations] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [connectionStatus, setConnectionStatus] = useState(false);
+    // const [connectionStatus, setConnectionStatus] = useState(false);
     const [locationStatus, setLocationStatus] = useState(false);
     const theme = useColorScheme();
     const isDarkTheme = theme === 'dark';
 
+    useEffect(() => {
+        const checkPermissions = async () => {
+            const hasLocationPermission = await checkLocationPermission();
+            dispatch(setGeolocationPermission(hasLocationPermission));
+            const isConnected = checkLocationPermission();
+            dispatch(setInternetStatus(isConnected));
+        };
+        if(!geoPermission && !connection){
+            checkPermissions();
+        }
+    }, [geoPermission, connection]);
+
+    useEffect(() => {
+        if (connection && geoPermission && forecast == null) {
+            loadForecast();
+        }
+    }, [forecast]);
+
+
     // Internet connection check
     const checkInternetConnection = async () => {
+        console.log('called func checkinternet')
       try {
         const state = await NetInfo.fetch();
-        setConnectionStatus(state.isConnected);
+        dispatch(setInternetStatus(state.isConnected));
+        console.log('internet connection == ' + state.isConnected);
       } catch (error) {
         console.log('Error while [checking internet connection]: ', error);
       }
     };
 
     const checkLocationPermission = async () => {
+        console.log('called func check check location permission');
         const hasLocationPermission = await getLocationPermission();
         if (hasLocationPermission) {
-            setLocationStatus(true);
+            dispatch(setGeolocationPermission(true));
+            console.log('location permission == ' + geoPermission);
             return true;
         } else {
-            setLocationStatus(false);
+            dispatch(setGeolocationPermission(false));
             console.log('Location permission denied');
             return false;
         }
@@ -52,30 +81,42 @@ const Weather = () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             setLocationStatus(false);
+            console.log('location status not granted');
+            return false;
         } else {
             setLocationStatus(true);
+            console.log('location status granted');
             try {
                 let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
-                setLocations(location);
+                dispatch(setGeoData(location));
+                console.log('LOCATION');
+                console.log(location);
+                return true;
             } catch (error) {
                 console.log('Error fetching location:', error);
+                return false;
             }
         }
     };
 
     const loadForecast = async () => {
+        console.log('called func load forecast');
         setRefreshing(true);
         try{
-            if (locations && locations.coords) {
+            if (geoData && geoData.coords) {
+                console.log('geodata ||');
+                console.log(geoData);
                 const response = await fetch(
-                    `${url}&lat=${locations.coords.latitude}&lon=${locations.coords.longitude}`
+                    `${url}&lat=${geoData.coords.latitude}&lon=${geoData.coords.longitude}`
                 );
                 const data = await response.json();
 
                 if (!response.ok) {
-                    Alert.alert('Data Error', 'Something went wrong while fetching weather data');
+                    Alert.alert('Fetch error', 'Something went wrong while fetching weather data');
                 } else {
-                    setForecast(data);
+                    dispatch(setForecastData(data));
+                    console.log('DATA |||');
+                    console.log(data);
                 }
             }
         } catch (error) {
@@ -85,19 +126,8 @@ const Weather = () => {
         }
     };
 
-    useEffect(() => {
-        checkInternetConnection();
-        checkLocationPermission();
-    }, [connectionStatus, locationStatus]);
-
-    useEffect(() => {
-        if (connectionStatus && locationStatus) {
-            loadForecast();
-        }
-    }, [connectionStatus, locationStatus]);
-
-
-    if (!connectionStatus) {
+    if (!connection) {
+        console.log('call no connection permission screen | no internet');
         return (
             <View style={styles.permission_body}>
                 <Image source={connectionImg} style={styles.permision_image} />
@@ -112,7 +142,8 @@ const Weather = () => {
         );
     }
 
-    if (!locationStatus) {
+    if (!geoPermission) {
+        console.log('call no location permission screen | permission denied');
         return (
             <View style={styles.permission_body}>
                 <Image source={require('../../assets/icons/location.png')} alt="humidity" style={styles.permision_image}/>
@@ -129,7 +160,8 @@ const Weather = () => {
         );
     }
 
-    if (!forecast) {
+    if (!forecast || !geoPermission || !connection) {
+        console.log('call app loader because loading DATA');
         return (
             <View style={styles.loading}>
                 <ActivityIndicator size="large" />
@@ -137,7 +169,6 @@ const Weather = () => {
         );
     }
 
-    // const current = forecast.current.weather[0];
     return(
         <View style={[styles.container,
                     isDarkTheme ? { backgroundColor: '#FFE142' } : { backgroundColor: '#FFE142' },
@@ -149,8 +180,8 @@ const Weather = () => {
                 }
                 style={{marginTop:50}}>
                 <Text style={styles.location}>
-                    {locations &&
-                        <Locator latitude={locations.coords.latitude} longitude={locations.coords.longitude}
+                    {geoData &&
+                        <Locator latitude={geoData.coords.latitude} longitude={geoData.coords.longitude}
                         />}
                 </Text>
                 <Text style={styles.time}>
@@ -178,6 +209,9 @@ const Weather = () => {
         </View>
     )
 }
+
+const screenw = Dimensions.get('screen').width;
+const screenh = Dimensions.get('screen').height;
 
 const styles = StyleSheet.create({
     container: {
