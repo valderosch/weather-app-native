@@ -28,22 +28,18 @@ const Weather = () => {
 
     // Internet connection check
     const checkInternetConnection = async () => {
-        console.log('check internet connection');
       try {
         const state = await NetInfo.fetch();
         setConnectionStatus(state.isConnected);
-        console.log('INTERNET CONNECTION = ' + state.isConnected);
       } catch (error) {
         console.log('Error while [checking internet connection]: ', error);
       }
     };
 
     const checkLocationPermission = async () => {
-        console.log('called func location permission');
         const hasLocationPermission = await getLocationPermission();
         if (hasLocationPermission) {
             setLocationStatus(true);
-            console.log('Location permission granted');
             return true;
         } else {
             setLocationStatus(false);
@@ -53,14 +49,13 @@ const Weather = () => {
     };
 
     const getLocationPermission = async () => {
-        console.log('called func request location');
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             setLocationStatus(false);
         } else {
             setLocationStatus(true);
             try {
-                let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
+                let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
                 setLocations(location);
             } catch (error) {
                 console.log('Error fetching location:', error);
@@ -69,7 +64,6 @@ const Weather = () => {
     };
 
     const loadForecast = async () => {
-        console.log('called func load forecast');
         setRefreshing(true);
         try{
             if (locations && locations.coords) {
